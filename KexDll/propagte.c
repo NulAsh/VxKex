@@ -591,6 +591,9 @@ STATIC NTSTATUS NTAPI Ext_NtCreateUserProcess(
 
 	if (!NT_SUCCESS(Status)) {
 		NTSTATUS Status2;
+		if (Status == STATUS_INVALID_IMAGE_NOT_MZ) {
+			return Status;
+		}
 
 		//
 		// Perhaps it failed due to the desired access/flags changes.
