@@ -216,9 +216,38 @@
 #  define unless(Condition) if (!(Condition))
 #  define ReturnAddress _ReturnAddress
 
-#  define PopulationCount16 __popcnt16
-#  define PopulationCount __popcnt
-#  define PopulationCount64 __popcnt64
+static __inline int hasPopcnt() {
+    int info[4];
+    __cpuid(info, 1);
+    return (info[2] & (1 << 23)) != 0;  // Returns 1 if POPCNT is supported, 0 otherwise
+}
+
+__inline int software_popcnt16(register WORD x) {
+    x = x - ((x >> 1) & 0x5555);
+    x = (x & 0x3333) + ((x >> 2) & 0x3333);
+    x = (x + (x >> 4)) & 0x0F0F;
+    x = x + (x >> 8);
+    return x & 0x1F;
+}
+
+__inline int software_popcnt(register DWORD x) {
+    x = x - ((x >> 1) & 0x55555555u);
+    x = (x & 0x33333333u) + ((x >> 2) & 0x33333333u);
+    x = (x + (x >> 4)) & 0x0F0F0F0Fu;
+    x = x + (x >> 8);
+    x = x + (x >> 16);
+    return x & 0x0000003Fu;
+}
+
+__inline int software_popcnt64(register QWORD x) {
+    x = x - ((x >> 1) & 0x5555555555555555ull);
+    x = (x & 0x3333333333333333ull) + ((x >> 2) & 0x3333333333333333ull);
+    return (((x + (x >> 4)) & 0x0F0F0F0F0F0F0F0Full) * 0x0101010101010101ull) >> 56;
+}
+
+#  define PopulationCount16(x) (hasPopcnt() ? __popcnt16(x) : software_popcnt16(x))
+#  define PopulationCount(x) (hasPopcnt() ? __popcnt(x) : software_popcnt(x))
+#  define PopulationCount64(x) (hasPopcnt() ? __popcnt64(x) : software_popcnt64(x))
 #pragma endregion
 
 #pragma region Convenience Macros
