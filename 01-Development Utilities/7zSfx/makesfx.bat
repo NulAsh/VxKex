@@ -166,7 +166,7 @@ del Archive.7z
 REM Now auto-increment the build number, but only for debug builds.
 
 if %DBGREL%==Debug (
-REM	"..\..\01-Development Utilities\vautogen\vautogen.exe"
+	"..\..\01-Development Utilities\vautogen\vautogen.exe"
 
 	if %errorlevel% neq 0 (
 		pause
